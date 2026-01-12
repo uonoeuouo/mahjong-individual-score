@@ -39,6 +39,9 @@ async def on_message(message):
 
 async def run_collection_process(channel):
     try:
+        print("MembersシートからID辞書を読み込み中...")
+        id_mapping = sheet_handler.get_id_mapping()
+
         # 1. 前回の完了地点を探す
         last_checkpoint = None
         async for msg in channel.history(limit=100):
@@ -64,7 +67,7 @@ async def run_collection_process(channel):
 
             # parserモジュールを使って解析
             timestamp = msg.created_at.strftime('%Y/%m/%d %H:%M')
-            rows, error = parse_and_validate_message(msg.content, timestamp)
+            rows, error = parse_and_validate_message(msg.content, timestamp, id_mapping)
 
             if error:
                 error_logs.append(f"⚠️ {timestamp} の投稿: {error}")
