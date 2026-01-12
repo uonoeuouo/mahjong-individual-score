@@ -1,0 +1,1 @@
+# mahjong-individual-score
