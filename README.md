@@ -24,7 +24,7 @@ Discordのチャットに投稿された麻雀のスコアを読み取り、Goog
 
 
 
-## セットアップ手順（Mac）
+## 🚀 セットアップ手順（Mac）
 ### 1.環境構築
 Python3が必要です。仮想環境を推奨します。
 ```
@@ -56,7 +56,6 @@ JSON_KEYFILE=credentials.json
 TARGET_SHEET_NAME=RawData
 ```
 
-## セットアップ手順（Windows）
 ## 🚀 セットアップ手順 (Windows)
 
 ### 1. Pythonのインストール
