@@ -56,7 +56,34 @@ JSON_KEYFILE=credentials.json
 TARGET_SHEET_NAME=RawData
 ```
 
+## セットアップ手順（Windows）
+## 🚀 セットアップ手順 (Windows)
 
+### 1. Pythonのインストール
+公式サイトからPythonインストーラーをダウンロードして実行します。
+**重要:** インストール画面の下部にある **"Add Python to PATH"** に必ずチェックを入れてください。
+
+### 2. 環境構築
+コマンドプロンプト（またはPowerShell）を開き、以下のコマンドを実行します。
+
+```cmd
+# プロジェクトフォルダへ移動 (例: Desktop\discord-bot)
+cd Desktop\discord-bot
+
+# 仮想環境の作成
+python -m venv venv
+
+# 仮想環境の有効化 (コマンドプロンプトの場合)
+venv\Scripts\activate.bat
+
+# ※PowerShellの場合はこちら
+:: venv\Scripts\Activate.ps1
+
+# (先頭に (venv) と表示されればOKです)
+
+# 必要なライブラリのインストール
+pip install discord.py gspread google-auth python-dotenv jaconv
+```
 
 
 
