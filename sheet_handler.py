@@ -1,5 +1,6 @@
 import gspread
 from google.oauth2.service_account import Credentials
+import jaconv
 
 class SheetHandler:
     def __init__(self, keyfile, spreadsheet_key, sheet_name):
@@ -24,7 +25,6 @@ class SheetHandler:
             rows = worksheet.get_all_values()
             
             mapping = {}
-            # 1行目はヘッダーとしてスキップし、2行目から処理
             for row in rows[1:]:
                 # 空行対策
                 if not row or not row[0]:
@@ -35,7 +35,8 @@ class SheetHandler:
                 # B列以降（表記揺れ）をすべてループ
                 for alias in row[1:]:
                     if alias.strip():
-                        mapping[alias.strip()] = official_name
+                        normalized_alias = jaconv.hira2kata(alias.strip())
+                        mapping[normalized_alias] = official_name
             
             return mapping
         except Exception as e:
