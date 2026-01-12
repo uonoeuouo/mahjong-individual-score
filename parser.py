@@ -26,7 +26,7 @@ def parse_and_validate_message(message_content, timestamp_str):
 
     # 2. 合計0チェック
     total_score = sum([s for _, s in game_data])
-    if abs(total_score) != 0.0:
+    if abs(total_score) > 0.1:
         return [], f"⚠️ 合計が0ではありません (合計: {total_score:.1f})"
 
     # 3. 順位計算とデータ整形
