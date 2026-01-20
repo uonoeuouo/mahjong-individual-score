@@ -1,6 +1,7 @@
 import re
+import jaconv
 
-def parse_and_validate_message(message_content, timestamp_str):
+def parse_and_validate_message(message_content, timestamp_str, name_mapping=None):
     """
     メッセージテキストを解析し、整形されたデータとエラーログを返す
     戻り値: (game_rows, error_message)
@@ -13,7 +14,9 @@ def parse_and_validate_message(message_content, timestamp_str):
         # 正規表現: "名前 スコア" を抽出
         match = re.match(r'^(.+?)[\s　]+([-\d\.]+)$', line.strip())
         if match:
-            name = match.group(1)
+            raw_name = match.group(1).strip()
+            normalized_name = jaconv.hira2kata(raw_name) 
+            name = name_mapping.get(normalized_name, normalized_name) # 名前の表記揺れを変換
             try:
                 score = float(match.group(2))
                 game_data.append((name, score))
