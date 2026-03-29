@@ -48,6 +48,8 @@ pip install discord.py gspread google-auth python-dotenv jaconv
 
 ### 3.設定ファイルの作成
 `.env`ファイルを作成し、以下の内容を記述してください。
+
+詳しい内容は管理者に聞いてください。
 ```
 DISCORD_TOKEN=あなたのBotトークン
 CHANNEL_ID=読み込むチャンネルのID(数字)
@@ -92,6 +94,8 @@ pip install discord.py gspread google-auth python-dotenv jaconv
 
 ### 4.設定ファイルの作成
 `.env`ファイルを作成し、以下の内容を記述してください。
+
+詳しい内容は管理者に聞いてください。
 ```
 DISCORD_TOKEN=あなたのBotトークン
 CHANNEL_ID=読み込むチャンネルのID(数字)
