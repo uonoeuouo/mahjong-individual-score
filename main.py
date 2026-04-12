@@ -14,7 +14,7 @@ SPREADSHEET_KEY = os.getenv('SPREADSHEET_KEY')
 JSON_KEYFILE = os.getenv('JSON_KEYFILE')
 SHEET_NAME = os.getenv('TARGET_SHEET_NAME')
 
-COMPLETION_MESSAGE = "✅ 集計完了しました。スプレッドシートを更新しました。"
+COMPLETION_MESSAGE = "✅ 集計完了しました。スプレッドシートを更新しました。https://docs.google.com/spreadsheets/d/1ObtQLSf9g3F-94Uzti7-5RLvCPEZEvMFklVeJh7fC1c/edit?gid=1098435240#gid=1098435240"
 
 # Discord設定
 intents = discord.Intents.default()
