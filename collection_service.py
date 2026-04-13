@@ -9,13 +9,12 @@ async def run_collection_process(channel, client, sheet_handler, completion_mess
         last_checkpoint = await _find_last_checkpoint(channel, client.user)
         history = _build_history_iterator(channel, last_checkpoint)
 
-        all_rows_to_add, error_logs, daily_batches, stats_chombo_counts = await _collect_history_rows(history, name_mapping)
+        all_rows_to_add, error_logs, daily_batches = await _collect_history_rows(history, name_mapping)
 
         result_msg = _write_results_and_build_message(
             sheet_handler,
             all_rows_to_add,
             daily_batches,
-            stats_chombo_counts,
             error_logs,
             completion_message,
         )
@@ -48,8 +47,6 @@ async def _collect_history_rows(history, name_mapping):
     all_rows_to_add = []
     error_logs = []
     daily_batches = {}
-    stats_chombo_counts = {}
-
     async for msg in history:
         if msg.author.bot or msg.content.startswith('!'):
             continue
@@ -72,18 +69,17 @@ async def _collect_history_rows(history, name_mapping):
         batch['games'].append(game_data)
 
         for name in chombo_names:
-            stats_chombo_counts[name] = stats_chombo_counts.get(name, 0) + 1
             batch['chombo_counts'][name] = batch['chombo_counts'].get(name, 0) + 1
 
-    return all_rows_to_add, error_logs, daily_batches, stats_chombo_counts
+    return all_rows_to_add, error_logs, daily_batches
 
 
-def _write_results_and_build_message(sheet_handler, all_rows_to_add, daily_batches, stats_chombo_counts, error_logs, completion_message):
+def _write_results_and_build_message(sheet_handler, all_rows_to_add, daily_batches, error_logs, completion_message):
     if all_rows_to_add:
         sheet_handler.append_game_data(all_rows_to_add)
         if daily_batches:
             sheet_handler.record_daily_activities_batch(daily_batches)
-        sheet_handler.record_stats_chombo_counts(stats_chombo_counts)
+        sheet_handler.record_stats_chombo_counts()
         result_msg = f"{completion_message}\n追加件数: {len(all_rows_to_add)//4} 試合"
     else:
         result_msg = "✅ 新しいスコア投稿はありませんでした。"
