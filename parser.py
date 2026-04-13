@@ -15,7 +15,7 @@ def parse_and_validate_message(message_content, timestamp_str, name_mapping=None
         match = re.match(r'^(.+?)[\s　]+([-\d\.]+)$', line.strip())
         if match:
             raw_name = match.group(1).strip()
-            normalized_name = jaconv.hira2kata(raw_name) 
+            normalized_name = jaconv.kata2hira(raw_name) 
             name = name_mapping.get(normalized_name, normalized_name) # 名前の表記揺れを変換
             try:
                 score = float(match.group(2))

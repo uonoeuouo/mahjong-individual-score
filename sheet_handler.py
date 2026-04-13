@@ -35,7 +35,7 @@ class SheetHandler:
                 # B列以降（表記揺れ）をすべてループ
                 for alias in row[1:]:
                     if alias.strip():
-                        normalized_alias = jaconv.hira2kata(alias.strip())
+                        normalized_alias = jaconv.kata2hira(alias.strip())
                         mapping[normalized_alias] = official_name
             
             return mapping
