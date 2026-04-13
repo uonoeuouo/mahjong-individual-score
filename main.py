@@ -59,6 +59,7 @@ async def run_collection_process(channel):
         # 2. メッセージ処理ループ
         all_rows_to_add = []
         error_logs = []
+        daily_batches = {}   # 日別シート用 { '20260412': [ [game1], [game2] ], ... }
 
         async for msg in history:
             if msg.author.bot or msg.content.startswith('!'):
@@ -73,9 +74,18 @@ async def run_collection_process(channel):
             elif rows:
                 all_rows_to_add.extend(rows)
 
+                sheet_date = msg.created_at.strftime('%Y%m%d')
+                game_data = [(r[1], r[2], r[3]) for r in rows]
+                
+                if sheet_date not in daily_batches:
+                    daily_batches[sheet_date] = []
+                daily_batches[sheet_date].append(game_data)
+
         # 3. 書き込みと結果報告
         if all_rows_to_add:
             sheet_handler.append_game_data(all_rows_to_add)
+            if daily_batches:
+                sheet_handler.record_daily_activities_batch(daily_batches)
             result_msg = f"{COMPLETION_MESSAGE}\n追加件数: {len(all_rows_to_add)//4} 試合"
         else:
             result_msg = "✅ 新しいスコア投稿はありませんでした。"
