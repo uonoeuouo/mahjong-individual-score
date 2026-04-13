@@ -75,7 +75,7 @@ async def run_collection_process(channel):
                 all_rows_to_add.extend(rows)
 
                 sheet_date = msg.created_at.strftime('%Y%m%d')
-                game_data = [(r[1], r[2]) for r in rows]
+                game_data = [(r[1], r[2], r[3]) for r in rows]
                 
                 if sheet_date not in daily_batches:
                     daily_batches[sheet_date] = []
