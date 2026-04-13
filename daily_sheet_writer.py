@@ -3,12 +3,13 @@ import gspread
 
 DAILY_SHEET_FORMULAS = [
     ["No. / 選手名", ""],
-    ["合計スコア", '=BYCOL($B$9:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(c))))'],
-    ["1着数", '=BYCOL($B$9:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(RANK(INDEX(c, r), INDEX($B$9:$Z, r))=1, 1, 0))))))))'],
-    ["2着数", '=BYCOL($B$9:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(RANK(INDEX(c, r), INDEX($B$9:$Z, r))=2, 1, 0))))))))'],
-    ["3着数", '=BYCOL($B$9:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(RANK(INDEX(c, r), INDEX($B$9:$Z, r))=3, 1, 0))))))))'],
-    ["4着数", '=BYCOL($B$9:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(RANK(INDEX(c, r), INDEX($B$9:$Z, r))=4, 1, 0))))))))'],
-    ["平均順位", '=BYCOL($B$9:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", IFERROR(SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, RANK(INDEX(c, r), INDEX($B$9:$Z, r)))))) / COUNT(c), ""))))'],
+    ["合計スコア", '=BYCOL($B$10:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(c) + IFERROR(INDEX($8:$8, 1, COLUMN(c)), 0) * -20)))'],
+    ["1着数", '=BYCOL($B$10:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(RANK(INDEX(c, r), INDEX($B$10:$Z, r))=1, 1, 0))))))))'],
+    ["2着数", '=BYCOL($B$10:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(RANK(INDEX(c, r), INDEX($B$10:$Z, r))=2, 1, 0))))))))'],
+    ["3着数", '=BYCOL($B$10:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(RANK(INDEX(c, r), INDEX($B$10:$Z, r))=3, 1, 0))))))))'],
+    ["4着数", '=BYCOL($B$10:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(RANK(INDEX(c, r), INDEX($B$10:$Z, r))=4, 1, 0))))))))'],
+    ["平均順位", '=BYCOL($B$10:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", IFERROR(SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, RANK(INDEX(c, r), INDEX($B$10:$Z, r)))))) / COUNT(c), ""))))'],
+    ["チョンボ数", ""],
     ["▼ 試合記録", ""],
 ]
 
@@ -18,19 +19,29 @@ class DailySheetWriter:
         self.spreadsheet = spreadsheet
 
     def write_batch(self, daily_data_map):
-        for date_str, games_list in daily_data_map.items():
+        for date_str, batch_data in daily_data_map.items():
+            games_list = batch_data.get('games', [])
+            chombo_counts = batch_data.get('chombo_counts', {})
             worksheet, all_values = self._get_or_create_daily_worksheet(date_str)
             header, player_to_col = self._ensure_header_players(worksheet, all_values, games_list)
             self._append_game_rows(worksheet, all_values, header, player_to_col, games_list)
+            self._update_chombo_row(worksheet, player_to_col, chombo_counts)
 
     def _get_or_create_daily_worksheet(self, date_str):
         try:
             worksheet = self.spreadsheet.worksheet(date_str)
             all_values = worksheet.get_all_values()
+
+            # 旧レイアウト(8行目が試合記録開始)は1行追加して移行する
+            if len(all_values) >= 8 and all_values[7] and all_values[7][0] == '▼ 試合記録':
+                worksheet.insert_row([""], index=8)
+                worksheet.update("A1:B9", DAILY_SHEET_FORMULAS, value_input_option='USER_ENTERED')
+                all_values = worksheet.get_all_values()
+
             return worksheet, all_values
         except gspread.exceptions.WorksheetNotFound:
             worksheet = self.spreadsheet.add_worksheet(title=date_str, rows="200", cols="26")
-            worksheet.update("A1:B8", DAILY_SHEET_FORMULAS, value_input_option='USER_ENTERED')
+            worksheet.update("A1:B9", DAILY_SHEET_FORMULAS, value_input_option='USER_ENTERED')
             return worksheet, [["No. / 選手名"]]
 
     def _ensure_header_players(self, worksheet, all_values, games_list):
@@ -39,7 +50,7 @@ class DailySheetWriter:
 
         new_players = []
         for game in games_list:
-            for name, _, _ in game:
+            for name, _, _, _ in game:
                 if name not in player_to_col:
                     new_players.append(name)
                     player_to_col[name] = len(header) + len(new_players)
@@ -54,16 +65,39 @@ class DailySheetWriter:
 
     def _append_game_rows(self, worksheet, all_values, header, player_to_col, games_list):
         rows_to_append = []
-        start_no = len(all_values) - 8 if len(all_values) > 8 else 0
+        start_no = len(all_values) - 9 if len(all_values) > 9 else 0
 
         for game in games_list:
             start_no += 1
             row = [""] * len(header)
             row[0] = start_no
-            for name, score, _ in game:
+            for name, score, _, _ in game:
                 col_idx = player_to_col[name]
                 row[col_idx - 1] = score
             rows_to_append.append(row)
 
         if rows_to_append:
             worksheet.append_rows(rows_to_append)
+
+    def _update_chombo_row(self, worksheet, player_to_col, chombo_counts):
+        if not chombo_counts:
+            return
+
+        row8 = worksheet.row_values(8)
+        cells = []
+        for name, add_count in chombo_counts.items():
+            col_idx = player_to_col.get(name)
+            if not col_idx:
+                continue
+
+            current_val = 0.0
+            if len(row8) >= col_idx and row8[col_idx - 1] != '':
+                try:
+                    current_val = float(row8[col_idx - 1])
+                except ValueError:
+                    current_val = 0.0
+
+            cells.append(gspread.cell.Cell(row=8, col=col_idx, value=current_val + add_count))
+
+        if cells:
+            worksheet.update_cells(cells, value_input_option='USER_ENTERED')

@@ -61,3 +61,32 @@ class SheetHandler:
         sh = self.client.open_by_key(self.spreadsheet_key)
         writer = DailySheetWriter(sh)
         writer.write_batch(daily_data_map)
+
+    def record_stats_chombo_counts(self, _chombo_counts, stats_sheet_name='Stats'):
+        """Statsシートの合計/チョンボ行を名前ベースの配列数式で維持する"""
+        sh = self.client.open_by_key(self.spreadsheet_key)
+        worksheet = sh.worksheet(stats_sheet_name)
+
+        # 旧実装の固定値が残っていると配列数式がスピルできず #REF になるため先にクリアする
+        worksheet.batch_clear(['B2:ZZ2', 'B12:ZZ12'])
+
+        worksheet.update('A2', [['合計スコア']])
+        worksheet.update(
+            'B2',
+            [[
+                '=BYCOL(B1:1, LAMBDA(name, IF(name="", "", '
+                'SUMIF(RawData!$B:$B, name, RawData!$C:$C) + '
+                'COUNTIFS(RawData!$B:$B, name, RawData!$E:$E, "チョンボ") * -20)))'
+            ]],
+            value_input_option='USER_ENTERED'
+        )
+
+        worksheet.update('A12', [['チョンボ数']])
+        worksheet.update(
+            'B12',
+            [[
+                '=BYCOL(B1:1, LAMBDA(name, IF(name="", "", '
+                'COUNTIFS(RawData!$B:$B, name, RawData!$E:$E, "チョンボ"))))'
+            ]],
+            value_input_option='USER_ENTERED'
+        )
