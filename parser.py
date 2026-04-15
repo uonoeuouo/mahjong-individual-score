@@ -1,6 +1,32 @@
 import re
 import jaconv
 
+
+def assign_average_ranks(sorted_game_data):
+    """同点者には平均順位を付与する。例: 70,-5,-5,-60 -> 1.0,2.5,2.5,4.0"""
+    ranked = []
+    i = 0
+    n = len(sorted_game_data)
+
+    while i < n:
+        score = sorted_game_data[i][1]
+        j = i
+        while j + 1 < n and sorted_game_data[j + 1][1] == score:
+            j += 1
+
+        # 1-indexed の開始/終了順位の平均
+        start_rank = i + 1
+        end_rank = j + 1
+        average_rank = (start_rank + end_rank) / 2.0
+
+        for k in range(i, j + 1):
+            name, score_val = sorted_game_data[k]
+            ranked.append((name, score_val, average_rank))
+
+        i = j + 1
+
+    return ranked
+
 def parse_and_validate_message(message_content, timestamp_str, name_mapping=None):
     """
     メッセージテキストを解析し、整形されたデータとエラーログを返す
@@ -54,9 +80,10 @@ def parse_and_validate_message(message_content, timestamp_str, name_mapping=None
     # 3. 順位計算とデータ整形
     # スコア降順でソート
     ranked_data = sorted(game_data, key=lambda x: x[1], reverse=True)
+    ranked_with_average = assign_average_ranks(ranked_data)
     
     formatted_rows = []
-    for rank, (name, score) in enumerate(ranked_data, 1):
+    for name, score, rank in ranked_with_average:
         # [日付, 名前, スコア, 着順, チョンボ]
         chombo_count = chombo_count_map.get(name, 0)
         if chombo_count <= 0:
