@@ -1,6 +1,9 @@
 import gspread
 
 
+MANAGED_DAILY_SHEET_PROTECTION_DESCRIPTION = "managed-by-bot-daily-sheet-lock"
+
+
 DAILY_SHEET_FORMULAS = [
     ["No. / 選手名", ""],
     ["合計スコア", '=BYCOL($B$10:$Z, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(c) + IFERROR(INDEX($8:$8, 1, COLUMN(c)), 0) * -20)))'],
@@ -15,8 +18,11 @@ DAILY_SHEET_FORMULAS = [
 
 
 class DailySheetWriter:
-    def __init__(self, spreadsheet):
+    def __init__(self, spreadsheet, protected_editor_emails=None):
         self.spreadsheet = spreadsheet
+        self.protected_editor_emails = sorted({
+            email.strip() for email in (protected_editor_emails or []) if email and email.strip()
+        })
 
     def write_batch(self, daily_data_map):
         for date_str, batch_data in daily_data_map.items():
@@ -27,6 +33,64 @@ class DailySheetWriter:
             header, player_to_col = self._ensure_header_players(worksheet, all_values, games_list)
             self._append_game_rows(worksheet, all_values, header, player_to_col, games_list)
             self._update_chombo_row(worksheet, player_to_col, chombo_counts)
+            self._ensure_sheet_protection(worksheet)
+
+    def _ensure_sheet_protection(self, worksheet):
+        if not self.protected_editor_emails:
+            return
+
+        metadata = self.spreadsheet.fetch_sheet_metadata(params={
+            "fields": "sheets(properties(sheetId),protectedRanges(protectedRangeId,description,range))"
+        })
+        target_sheet = next(
+            (s for s in metadata.get("sheets", []) if s.get("properties", {}).get("sheetId") == worksheet.id),
+            None,
+        )
+        if not target_sheet:
+            return
+
+        protected_ranges = target_sheet.get("protectedRanges", [])
+        managed_ranges = [
+            r for r in protected_ranges
+            if r.get("description") == MANAGED_DAILY_SHEET_PROTECTION_DESCRIPTION
+        ]
+
+        requests = []
+        if managed_ranges:
+            primary = managed_ranges[0]
+            requests.append({
+                "updateProtectedRange": {
+                    "protectedRange": {
+                        "protectedRangeId": primary["protectedRangeId"],
+                        "range": {"sheetId": worksheet.id},
+                        "description": MANAGED_DAILY_SHEET_PROTECTION_DESCRIPTION,
+                        "warningOnly": False,
+                        "editors": {"users": self.protected_editor_emails},
+                    },
+                    "fields": "range,description,warningOnly,editors",
+                }
+            })
+
+            for duplicate in managed_ranges[1:]:
+                requests.append({
+                    "deleteProtectedRange": {
+                        "protectedRangeId": duplicate["protectedRangeId"],
+                    }
+                })
+        else:
+            requests.append({
+                "addProtectedRange": {
+                    "protectedRange": {
+                        "range": {"sheetId": worksheet.id},
+                        "description": MANAGED_DAILY_SHEET_PROTECTION_DESCRIPTION,
+                        "warningOnly": False,
+                        "editors": {"users": self.protected_editor_emails},
+                    }
+                }
+            })
+
+        if requests:
+            self.spreadsheet.batch_update({"requests": requests})
 
     def _ensure_summary_formulas(self, worksheet):
         labels = [[row[0]] for row in DAILY_SHEET_FORMULAS]
