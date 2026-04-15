@@ -14,6 +14,27 @@ class SheetHandler:
         ]
         creds = Credentials.from_service_account_file(keyfile, scopes=scopes)
         self.client = gspread.authorize(creds)
+        self.service_account_email = getattr(creds, 'service_account_email', None)
+
+    def _get_spreadsheet_owner_emails(self, spreadsheet):
+        try:
+            permissions = spreadsheet.list_permissions()
+        except Exception as e:
+            print(f"オーナー情報の取得に失敗しました: {e}")
+            return []
+
+        owner_emails = {
+            permission.get('emailAddress', '').strip()
+            for permission in permissions
+            if permission.get('role') == 'owner' and permission.get('emailAddress')
+        }
+        return sorted(owner_emails)
+
+    def _build_daily_sheet_protected_editors(self, spreadsheet):
+        allowed_editors = set(self._get_spreadsheet_owner_emails(spreadsheet))
+        if self.service_account_email:
+            allowed_editors.add(self.service_account_email)
+        return sorted(allowed_editors)
 
     def get_name_mapping(self):
         """
@@ -59,7 +80,8 @@ class SheetHandler:
         集計はスプレッドシートの配列数式（BYCOL）に任せる。
         """
         sh = self.client.open_by_key(self.spreadsheet_key)
-        writer = DailySheetWriter(sh)
+        protected_editors = self._build_daily_sheet_protected_editors(sh)
+        writer = DailySheetWriter(sh, protected_editor_emails=protected_editors)
         writer.write_batch(daily_data_map)
 
     def record_stats_chombo_counts(self, stats_sheet_name='Stats'):
