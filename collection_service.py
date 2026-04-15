@@ -3,7 +3,6 @@ from parser import parse_and_validate_message
 
 async def run_collection_process(channel, client, sheet_handler, completion_message):
     try:
-        print("選手名辞書を更新中...")
         name_mapping = sheet_handler.get_name_mapping()
 
         last_checkpoint = await _find_last_checkpoint(channel, client.user)
@@ -82,7 +81,7 @@ def _write_results_and_build_message(sheet_handler, all_rows_to_add, daily_batch
         sheet_handler.record_stats_chombo_counts()
         result_msg = f"{completion_message}\n追加件数: {len(all_rows_to_add)//4} 試合"
     else:
-        result_msg = "✅ 新しいスコア投稿はありませんでした。"
+        result_msg = "✅ 集計は行われませんでした。"
 
     if error_logs:
         result_msg += "\n\n【エラー報告】\n" + "\n".join(error_logs)
