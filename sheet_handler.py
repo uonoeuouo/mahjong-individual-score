@@ -73,7 +73,8 @@ class SheetHandler:
             [[
                 '=BYCOL(B1:1, LAMBDA(name, IF(name="", "", '
                 'SUMIF(RawData!$B:$B, name, RawData!$C:$C) + '
-                'COUNTIFS(RawData!$B:$B, name, RawData!$E:$E, "チョンボ") * -20)))'
+                'SUMPRODUCT((RawData!$B:$B=name) * REGEXMATCH(RawData!$E:$E, "^チョンボ([0-9０-９]+)?$") * '
+                'IFERROR(VALUE(REGEXEXTRACT(RawData!$E:$E, "([0-9０-９]+)$")), 1)) * -20)))'
             ]],
             value_input_option='USER_ENTERED'
         )
@@ -83,7 +84,8 @@ class SheetHandler:
             'B12',
             [[
                 '=BYCOL(B1:1, LAMBDA(name, IF(name="", "", '
-                'COUNTIFS(RawData!$B:$B, name, RawData!$E:$E, "チョンボ"))))'
+                'SUMPRODUCT((RawData!$B:$B=name) * REGEXMATCH(RawData!$E:$E, "^チョンボ([0-9０-９]+)?$") * '
+                'IFERROR(VALUE(REGEXEXTRACT(RawData!$E:$E, "([0-9０-９]+)$")), 1)))))'
             ]],
             value_input_option='USER_ENTERED'
         )
