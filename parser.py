@@ -40,7 +40,7 @@ def parse_and_validate_message(message_content, timestamp_str, name_mapping=None
     # 1. テキスト解析
     for line in lines:
         # 正規表現: "名前 スコア [チョンボ][回数]" を抽出
-        match = re.match(r'^(.+?)[\s　]+([-\d\.]+)(?:[\s　]+(チョンボ)(?:[\s　]*(\d+))?)?$', line.strip())
+        match = re.match(r'^(.+?)[\s　]+([+\-\d\.]+)(?:[\s　]+(チョンボ)(?:[\s　]*(\d+))?)?$', line.strip())
 
         if match:
             raw_name = match.group(1).strip()
