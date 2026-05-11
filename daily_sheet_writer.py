@@ -12,7 +12,7 @@ DAILY_SHEET_FORMULAS = [
     ["3着数", '=BYCOL($B$10:$ZZ, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(AND(COUNTIF(INDEX($B$10:$ZZ, r), ">"&INDEX(c, r)) + 1 <= 3, 3 <= COUNTIF(INDEX($B$10:$ZZ, r), ">"&INDEX(c, r)) + COUNTIF(INDEX($B$10:$ZZ, r), INDEX(c, r))), 1 / COUNTIF(INDEX($B$10:$ZZ, r), INDEX(c, r)), 0))))))))'],
     ["4着数", '=BYCOL($B$10:$ZZ, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, IF(AND(COUNTIF(INDEX($B$10:$ZZ, r), ">"&INDEX(c, r)) + 1 <= 4, 4 <= COUNTIF(INDEX($B$10:$ZZ, r), ">"&INDEX(c, r)) + COUNTIF(INDEX($B$10:$ZZ, r), INDEX(c, r))), 1 / COUNTIF(INDEX($B$10:$ZZ, r), INDEX(c, r)), 0))))))))'],
     ["平均順位", '=BYCOL($B$10:$ZZ, LAMBDA(c, IF(INDEX($1:$1, 1, COLUMN(c))="", "", IFERROR(SUM(MAP(SEQUENCE(ROWS(c)), LAMBDA(r, IF(INDEX(c, r)="", 0, (COUNTIF(INDEX($B$10:$ZZ, r), ">"&INDEX(c, r)) + 1 + COUNTIF(INDEX($B$10:$ZZ, r), ">"&INDEX(c, r)) + COUNTIF(INDEX($B$10:$ZZ, r), INDEX(c, r))) / 2)))) / COUNT(c), ""))))'],
-    ["チョンボ数", ""]
+    ["チョンボ数", ""],
     ["▼ 試合記録", ""],
 ]
 
