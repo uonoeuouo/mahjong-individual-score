@@ -64,19 +64,20 @@ pip install discord.py gspread google-auth python-dotenv jaconv
 
 
 # 🚀 共通設定
-## 1.git clone
+## 1. Googleスプレッドシートのセットアップ
+個人戦を始める前に、新しいスプレッドシートを用意してください。
+
+1. サークルのGoogleアカウントにあるテンプレートスプレッドシートを開きます。
+2. そのテンプレートをコピーし、ファイル名を「2026後期個人戦」という形式で作成します。
+3. コピー後、`RawData` と `Stats` のシートについて、シートの保護設定を変更します。
+4. 各シート名を右クリックし、`シートを保護` を開いて `キャンセル` を押したあと、`権限を変更` を選択します。
+5. `mahjong-score@...` にチェックを入れて、編集権限を付与します。
+
+## 2.git clone
 `git clone https://...`でこのリポジトリをクローンしてください。
 
-## 2.設定ファイルの作成
-プロジェクトディレクトリに`.env`ファイルを作成し、以下の内容を記述してください。
-
-```
-DISCORD_TOKEN=あなたのBotトークン
-CHANNEL_ID=読み込むチャンネルのID(数字)
-SPREADSHEET_KEY=スプレッドシートのID(URLの/d/xxx/editのxxx部分)
-JSON_KEYFILE=credentials.json
-TARGET_SHEET_NAME=RawData
-```
+## 3.設定ファイルの作成
+プロジェクトディレクトリに`.env`ファイルを作成してください。
 
 また、`credentials.json`ファイルを作成してください。
 
