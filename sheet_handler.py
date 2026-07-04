@@ -101,9 +101,17 @@ class SheetHandler:
         worksheet.append_rows(rows_with_table_id)
 
     def _next_raw_data_table_id(self, worksheet):
-        all_values = worksheet.get_all_values()
-        data_rows = all_values[RAW_DATA_HEADER_ROWS:]
-        non_empty_data_rows = [row for row in data_rows if any(row)]
+        table_ids = [
+            table_id
+            for value in worksheet.col_values(1)[RAW_DATA_HEADER_ROWS:]
+            if (table_id := self._parse_table_id(value)) is not None
+        ]
+
+        if table_ids:
+            return max(table_ids) + 1
+
+        raw_data_timestamps = worksheet.col_values(2)[RAW_DATA_HEADER_ROWS:]
+        non_empty_data_rows = [value for value in raw_data_timestamps if value]
         return len(non_empty_data_rows) // RAW_DATA_ROWS_PER_GAME + 1
 
     def _add_table_ids(self, rows, start_table_id):
@@ -111,6 +119,13 @@ class SheetHandler:
             [start_table_id + index // RAW_DATA_ROWS_PER_GAME] + row
             for index, row in enumerate(rows)
         ]
+
+    def _parse_table_id(self, value):
+        if isinstance(value, int):
+            return value
+
+        value = str(value).strip()
+        return int(value) if value.isdigit() else None
 
     def record_daily_activities_batch(self, daily_data_map):
         """
