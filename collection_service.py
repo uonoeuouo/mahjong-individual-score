@@ -1,6 +1,7 @@
 from parser import parse_and_validate_message
 from collection_result import CollectionResult
-
+from datetime import timedelta, timezone
+JST = timezone(timedelta(hours=9))
 
 async def run_collection_process(channel, client, sheet_handler, completion_message):
     try:

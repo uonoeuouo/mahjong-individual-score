@@ -1,8 +1,4 @@
 from dataclasses import dataclass, field
-from datetime import timedelta, timezone
-
-
-JST = timezone(timedelta(hours=9))
 
 RAW_ROW_NAME_INDEX = 1
 RAW_ROW_SCORE_INDEX = 2
