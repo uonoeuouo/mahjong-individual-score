@@ -8,18 +8,20 @@ STATS_TOTAL_LABEL_CELL = 'A2'
 STATS_TOTAL_FORMULA_CELL = 'B2'
 STATS_CHOMBO_LABEL_CELL = 'A12'
 STATS_CHOMBO_FORMULA_CELL = 'B12'
+RAW_DATA_HEADER_ROWS = 1
+RAW_DATA_ROWS_PER_GAME = 4
 
 STATS_TOTAL_FORMULA = (
     '=BYCOL(B1:1, LAMBDA(name, IF(name="", "", '
-    'SUMIF(RawData!$B:$B, name, RawData!$C:$C) + '
-    'SUMPRODUCT((RawData!$B:$B=name) * REGEXMATCH(RawData!$E:$E, "^チョンボ([0-9０-９]+)?$") * '
-    'IFERROR(VALUE(REGEXEXTRACT(RawData!$E:$E, "([0-9０-９]+)$")), 1)) * -20)))'
+    'SUMIF(RawData!$C:$C, name, RawData!$D:$D) + '
+    'SUMPRODUCT((RawData!$C:$C=name) * REGEXMATCH(RawData!$F:$F, "^チョンボ([0-9０-９]+)?$") * '
+    'IFERROR(VALUE(REGEXEXTRACT(RawData!$F:$F, "([0-9０-９]+)$")), 1)) * -20)))'
 )
 
 STATS_CHOMBO_FORMULA = (
     '=BYCOL(B1:1, LAMBDA(name, IF(name="", "", '
-    'SUMPRODUCT((RawData!$B:$B=name) * REGEXMATCH(RawData!$E:$E, "^チョンボ([0-9０-９]+)?$") * '
-    'IFERROR(VALUE(REGEXEXTRACT(RawData!$E:$E, "([0-9０-９]+)$")), 1)))))'
+    'SUMPRODUCT((RawData!$C:$C=name) * REGEXMATCH(RawData!$F:$F, "^チョンボ([0-9０-９]+)?$") * '
+    'IFERROR(VALUE(REGEXEXTRACT(RawData!$F:$F, "([0-9０-９]+)$")), 1)))))'
 )
 
 class SheetHandler:
@@ -94,7 +96,21 @@ class SheetHandler:
         
         spreadsheet = self._open_spreadsheet()
         worksheet = spreadsheet.worksheet(self.sheet_name)
-        worksheet.append_rows(rows)
+        next_table_id = self._next_raw_data_table_id(worksheet)
+        rows_with_table_id = self._add_table_ids(rows, next_table_id)
+        worksheet.append_rows(rows_with_table_id)
+
+    def _next_raw_data_table_id(self, worksheet):
+        all_values = worksheet.get_all_values()
+        data_rows = all_values[RAW_DATA_HEADER_ROWS:]
+        non_empty_data_rows = [row for row in data_rows if any(row)]
+        return len(non_empty_data_rows) // RAW_DATA_ROWS_PER_GAME + 1
+
+    def _add_table_ids(self, rows, start_table_id):
+        return [
+            [start_table_id + index // RAW_DATA_ROWS_PER_GAME] + row
+            for index, row in enumerate(rows)
+        ]
 
     def record_daily_activities_batch(self, daily_data_map):
         """
