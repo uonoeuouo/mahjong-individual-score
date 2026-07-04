@@ -1,4 +1,6 @@
 from parser import parse_and_validate_message
+from datetime import timezone, timedelta
+JST = timezone(timedelta(hours=9))
 
 
 async def run_collection_process(channel, client, sheet_handler, completion_message):
@@ -50,7 +52,7 @@ async def _collect_history_rows(history, name_mapping):
         if msg.author.bot or msg.content.startswith('!'):
             continue
 
-        timestamp = msg.created_at.strftime('%Y/%m/%d %H:%M')
+        timestamp = msg.created_at.astimezone(JST).strftime('%Y/%m/%d %H:%M')
         rows, error, chombo_names = parse_and_validate_message(msg.content, timestamp, name_mapping)
 
         if error:
