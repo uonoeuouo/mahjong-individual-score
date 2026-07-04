@@ -85,3 +85,6 @@ pip install discord.py gspread google-auth python-dotenv jaconv
 また、`credentials.json`ファイルを作成してください。
 
 各ファイルの内容は管理者に聞いてください。
+
+## 4.COMPLETION_MESSAGEの変更
+`config.py`の`COMPLETION_MESSAGE`のスプレッドシートのリンクを、新しいスプレッドシートのリンクに置き換えてください。
