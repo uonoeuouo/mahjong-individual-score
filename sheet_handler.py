@@ -8,18 +8,20 @@ STATS_TOTAL_LABEL_CELL = 'A2'
 STATS_TOTAL_FORMULA_CELL = 'B2'
 STATS_CHOMBO_LABEL_CELL = 'A12'
 STATS_CHOMBO_FORMULA_CELL = 'B12'
+RAW_DATA_HEADER_ROWS = 1
+RAW_DATA_ROWS_PER_GAME = 4
 
 STATS_TOTAL_FORMULA = (
     '=BYCOL(B1:1, LAMBDA(name, IF(name="", "", '
-    'SUMIF(RawData!$B:$B, name, RawData!$C:$C) + '
-    'SUMPRODUCT((RawData!$B:$B=name) * REGEXMATCH(RawData!$E:$E, "^チョンボ([0-9０-９]+)?$") * '
-    'IFERROR(VALUE(REGEXEXTRACT(RawData!$E:$E, "([0-9０-９]+)$")), 1)) * -20)))'
+    'SUMIF(RawData!$C:$C, name, RawData!$D:$D) + '
+    'SUMPRODUCT((RawData!$C:$C=name) * REGEXMATCH(RawData!$F:$F, "^チョンボ([0-9０-９]+)?$") * '
+    'IFERROR(VALUE(REGEXEXTRACT(RawData!$F:$F, "([0-9０-９]+)$")), 1)) * -20)))'
 )
 
 STATS_CHOMBO_FORMULA = (
     '=BYCOL(B1:1, LAMBDA(name, IF(name="", "", '
-    'SUMPRODUCT((RawData!$B:$B=name) * REGEXMATCH(RawData!$E:$E, "^チョンボ([0-9０-９]+)?$") * '
-    'IFERROR(VALUE(REGEXEXTRACT(RawData!$E:$E, "([0-9０-９]+)$")), 1)))))'
+    'SUMPRODUCT((RawData!$C:$C=name) * REGEXMATCH(RawData!$F:$F, "^チョンボ([0-9０-９]+)?$") * '
+    'IFERROR(VALUE(REGEXEXTRACT(RawData!$F:$F, "([0-9０-９]+)$")), 1)))))'
 )
 
 class SheetHandler:
@@ -94,7 +96,36 @@ class SheetHandler:
         
         spreadsheet = self._open_spreadsheet()
         worksheet = spreadsheet.worksheet(self.sheet_name)
-        worksheet.append_rows(rows)
+        next_table_id = self._next_raw_data_table_id(worksheet)
+        rows_with_table_id = self._add_table_ids(rows, next_table_id)
+        worksheet.append_rows(rows_with_table_id)
+
+    def _next_raw_data_table_id(self, worksheet):
+        table_ids = [
+            table_id
+            for value in worksheet.col_values(1)[RAW_DATA_HEADER_ROWS:]
+            if (table_id := self._parse_table_id(value)) is not None
+        ]
+
+        if table_ids:
+            return max(table_ids) + 1
+
+        raw_data_timestamps = worksheet.col_values(2)[RAW_DATA_HEADER_ROWS:]
+        non_empty_data_rows = [value for value in raw_data_timestamps if value]
+        return len(non_empty_data_rows) // RAW_DATA_ROWS_PER_GAME + 1
+
+    def _add_table_ids(self, rows, start_table_id):
+        return [
+            [start_table_id + index // RAW_DATA_ROWS_PER_GAME] + row
+            for index, row in enumerate(rows)
+        ]
+
+    def _parse_table_id(self, value):
+        if isinstance(value, int):
+            return value
+
+        value = str(value).strip()
+        return int(value) if value.isdigit() else None
 
     def record_daily_activities_batch(self, daily_data_map):
         """
