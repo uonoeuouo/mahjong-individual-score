@@ -16,35 +16,54 @@
 
 
 
+# 🚀 初回セットアップの流れ
+1. Gitをインストール
+2. Pythonをインストール
+3. VS Codeをインストール
+4. リポジトリをclone
+5. 仮想環境を作る
+6. ライブラリをインストール
+7. 環境変数を設定
+8. COMPLETION_MESSAGEの変更
+9. スプレッドシートを設定
+10. Botを起動
+
+### 1.Gitのインストール
+以下の記事に従えばできると思います。
+https://qiita.com/takeru-hirai/items/4fbe6593d42f9a844b1c
+
+### 2.Pythonのインストール
+以下の記事に従えばできると思います。
+https://qiita.com/Obataskill/items/4cfe0d4d8cec8a140b8e
+
+### 3.VSCodeのインストール
+以下の記事に従えばできると思います。
+https://qiita.com/yuri_777/items/b2d0472ba68ebe431859
+
+また、Pythonの拡張機能をインストールしてください。
+
+### 4.リポジトリをクローン
+ターミナルで以下を実行すればできます。
+`git clone https://github.com/uonoeuouo/mahjong-individual-score.git`
 
 
-# 🚀 Python Setup (Mac)
-## 1.環境構築
-Python3が必要です。仮想環境を推奨します。
+### 5.仮想環境を作る
+(Macの場合)
 ```
-# プロジェクトフォルダへ移動
-cd /path/to/project
+# プロジェクトフォルダへ移動(パスは例です)
+cd /User/mahjong-indivisual-score
 
 # 仮想環境の作成と有効化
 python -m venv venv
 source venv/bin/activate
 
-# 必要なライブラリのインストール
-pip install discord.py gspread google-auth python-dotenv jaconv
+# (先頭に (venv) と表示されればOKです)
 ```
 
-
-# 🚀 Python Setup (Windows)
-## 1. Pythonのインストール
-公式サイトからPythonインストーラーをダウンロードして実行します。
-**重要:** インストール画面の下部にある **"Add Python to PATH"** に必ずチェックを入れてください。
-
-## 2. 環境構築
-コマンドプロンプト（またはPowerShell）を開き、以下のコマンドを実行します。
-
+(Windowsの場合)
 ```cmd
 # プロジェクトフォルダへ移動 (例: Desktop\discord-bot)
-cd Desktop\discord-bot
+cd Desktop\mahjong-indivisual-score
 
 # 仮想環境の作成
 python -m venv venv
@@ -56,15 +75,26 @@ venv\Scripts\activate.bat
 :: venv\Scripts\Activate.ps1
 
 # (先頭に (venv) と表示されればOKです)
-
-# 必要なライブラリのインストール
-pip install discord.py gspread google-auth python-dotenv jaconv
+# 仮想環境の有効化でエラーが出る場合があります。エラー文をLLMにぶち込んで解決策を教えてもらいましょう。
 ```
 
 
+### 6.ライブラリをインストール
+仮想環境下(先頭にvenvとついてる状態)で以下を実行します。
+```
+pip install discord.py gspread google-auth python-dotenv jaconv
+```
 
-# 🚀 共通設定
-## 1. Googleスプレッドシートのセットアップ
+### 7.環境関数の設定
+`.env`と`credentials.json`を作ります。
+ファイルの位置はこのREADMEの一番上にある構成の通りです。
+中身は管理者に教えてもらってください。
+
+### 8.COMPLETION_MESSAGEの変更
+`config.py`の`COMPLETION_MESSAGE`のスプレッドシートのリンクを、新しいスプレッドシートのリンクに置き換えてください。
+
+
+### 9. Googleスプレッドシートのセットアップ
 個人戦を始める前に、新しいスプレッドシートを用意してください。
 
 1. サークルのGoogleアカウントにあるテンプレートスプレッドシートを開きます。
@@ -75,16 +105,3 @@ pip install discord.py gspread google-auth python-dotenv jaconv
 6. `mahjong-score@...` にチェックを入れて、編集権限を付与します。
 
 サービスアカウント(mahjong-score@...)の正しいメールアドレスは管理者に聞いてください。
-
-## 2.git clone
-`git clone https://...`でこのリポジトリをクローンしてください。
-
-## 3.設定ファイルの作成
-プロジェクトディレクトリに`.env`ファイルを作成してください。
-
-また、`credentials.json`ファイルを作成してください。
-
-各ファイルの内容は管理者に聞いてください。
-
-## 4.COMPLETION_MESSAGEの変更
-`config.py`の`COMPLETION_MESSAGE`のスプレッドシートのリンクを、新しいスプレッドシートのリンクに置き換えてください。
